@@ -30,4 +30,9 @@ private:
     /** vehicle simulation component */
     UPROPERTY(Category = Vehicle, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     class UWheeledVehicleMovementComponent* VehicleMovement;
+
+    UPROPERTY()
+    class UTopic* ThrottleTopic;
+
+    float Throttle;
 };

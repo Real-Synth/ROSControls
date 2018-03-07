@@ -11,7 +11,6 @@ public class ROSControls : ModuleRules
 		PublicIncludePaths.AddRange(
 			new string[] {
 				"ROSControls/Public"
-				// ... add public include paths required here ...
 			}
 			);
 				
@@ -19,7 +18,6 @@ public class ROSControls : ModuleRules
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				"ROSControls/Private",
-				// ... add other private include paths required here ...
 			}
 			);
 			
@@ -28,8 +26,8 @@ public class ROSControls : ModuleRules
 			new string[]
 			{
 				"Core",
-                "PhysXVehicles"
-				// ... add other public dependencies that you statically link with here ...
+                "PhysXVehicles",
+                "ROSIntegration"
 			}
 			);
 			
@@ -40,8 +38,7 @@ public class ROSControls : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore",
-				// ... add private dependencies that you statically link with here ...	
+				"SlateCore"
 			}
 			);
 		
@@ -49,7 +46,6 @@ public class ROSControls : ModuleRules
 		DynamicallyLoadedModuleNames.AddRange(
 			new string[]
 			{
-				// ... add any modules that your module loads dynamically here ...
 			}
 			);
 	}
