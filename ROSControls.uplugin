@@ -1,0 +1,33 @@
+{
+    "FileVersion": 3,
+    "Version": 1,
+    "VersionName": "1.0",
+    "FriendlyName": "ROS Controls",
+    "Description": "This plugin enables control of wheeled vehicles via ROS messages.",
+    "Category": "Simulation",
+    "CreatedBy": "RealSynth GmbH",
+    "CreatedByURL": "http://realsynth.de/",
+    "DocsURL": "",
+    "MarketplaceURL": "",
+    "SupportURL": "",
+    "CanContainContent": true,
+    "IsBetaVersion": false,
+    "Installed": false,
+    "Modules": [
+        {
+            "Name": "ROSControls",
+            "Type": "Developer",
+            "LoadingPhase": "Default"
+        }
+    ],
+    "Plugins": [
+        {
+            "Name": "PhysXVehicles",
+            "Enabled": true
+        },
+        {
+            "Name": "ROSIntegration",
+            "Enabled": true
+        }
+    ]
+}
