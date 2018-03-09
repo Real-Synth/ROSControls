@@ -10,6 +10,35 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogROSWheeledVehicleController, Log, All);
 
+bool SubscribeTopicFloat32(UROSIntegrationGameInstance* rosinst, UTopic** NewTopic, const FString& VehicleName, const FString& TopicName, float* Float32Variable)
+{
+    if (*NewTopic)
+    {
+        (*NewTopic)->Unsubscribe();
+        (*NewTopic) = nullptr;
+    }
+
+    UTopic* Topic = NewObject<UTopic>(UTopic::StaticClass());
+    Topic->Init(rosinst->_Ric, FString::Printf(TEXT("/unreal/%s/%s"), *VehicleName, *TopicName), TEXT("std_msgs/Float32"));
+
+    std::function<void(TSharedPtr<FROSBaseMsg>)> Callback = [Float32Variable](TSharedPtr<FROSBaseMsg> msg) -> void
+    {
+        auto Concrete = StaticCastSharedPtr<ROSMessages::std_msgs::Float32>(msg);
+        if (Concrete.IsValid())
+        {
+            *Float32Variable = Concrete->_Data;
+        }
+    };
+
+    if (!Topic->Subscribe(Callback))
+    {
+        *NewTopic = nullptr;
+        return false;
+    }
+    *NewTopic = Topic;
+    return true;
+}
+
 void AWheeledVehicleController::Possess(APawn *aPawn)
 {
     Super::Possess(aPawn);
@@ -29,53 +58,14 @@ void AWheeledVehicleController::Possess(APawn *aPawn)
     UROSIntegrationGameInstance* rosinst = Cast<UROSIntegrationGameInstance>(Vehicle->GetGameInstance());
     if (rosinst)
     {
-        if (ThrottleTopic)
-        {
-            ThrottleTopic->Unsubscribe();
-            ThrottleTopic = nullptr;
-        }
-        if (SteeringTopic)
-        {
-            SteeringTopic->Unsubscribe();
-            SteeringTopic = nullptr;
-        }
+        bool success = true;
+        success = success && SubscribeTopicFloat32(rosinst, &ThrottleTopic, VehicleName, TEXT("throttle"), &Throttle);
+        success = success && SubscribeTopicFloat32(rosinst, &SteeringTopic, VehicleName, TEXT("steering"), &Steering);
+        success = success && SubscribeTopicFloat32(rosinst, &BrakeTopic, VehicleName, TEXT("brake"), &Brake);
 
-        ThrottleTopic = NewObject<UTopic>(UTopic::StaticClass());
-        ThrottleTopic->Init(rosinst->_Ric, FString::Printf(TEXT("/unreal/%s/throttle"), *VehicleName), TEXT("std_msgs/Float32"));
-
-        std::function<void(TSharedPtr<FROSBaseMsg>)> ThrottleCallback = [this](TSharedPtr<FROSBaseMsg> msg) -> void
+        if (!success)
         {
-            auto Concrete = StaticCastSharedPtr<ROSMessages::std_msgs::Float32>(msg);
-            if (Concrete.IsValid())
-            {
-                this->Throttle = Concrete->_Data;
-            }
-        };
-
-        if (!ThrottleTopic->Subscribe(ThrottleCallback))
-        {
-            ThrottleTopic = nullptr;
             UE_LOG(LogROSWheeledVehicleController, Error, TEXT("Unable to connect to rosbridge %s:%u."), *rosinst->ROSBridgeServerHost, rosinst->ROSBridgeServerPort);
-        }
-        else
-        {
-            SteeringTopic = NewObject<UTopic>(UTopic::StaticClass());
-            SteeringTopic->Init(rosinst->_Ric, FString::Printf(TEXT("/unreal/%s/steering"), *VehicleName), TEXT("std_msgs/Float32"));
-
-            std::function<void(TSharedPtr<FROSBaseMsg>)> SteeringCallback = [this](TSharedPtr<FROSBaseMsg> msg) -> void
-            {
-                auto Concrete = StaticCastSharedPtr<ROSMessages::std_msgs::Float32>(msg);
-                if (Concrete.IsValid())
-                {
-                    this->Steering = Concrete->_Data;
-                }
-            };
-
-            if (!SteeringTopic->Subscribe(SteeringCallback))
-            {
-                SteeringTopic = nullptr;
-                UE_LOG(LogROSWheeledVehicleController, Error, TEXT("Unable to connect to rosbridge %s:%u."), *rosinst->ROSBridgeServerHost, rosinst->ROSBridgeServerPort);
-            }
         }
     }
     else
@@ -95,5 +85,9 @@ void AWheeledVehicleController::Tick(const float DeltaTime)
   if (VehicleMovement && SteeringTopic)
   {
       VehicleMovement->SetSteeringInput(Steering);
+  }
+  if (VehicleMovement && BrakeTopic)
+  {
+      VehicleMovement->SetBrakeInput(Brake);
   }
 }
