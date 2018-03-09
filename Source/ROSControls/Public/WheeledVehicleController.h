@@ -33,6 +33,9 @@ private:
 
     UPROPERTY()
     class UTopic* ThrottleTopic;
+    UPROPERTY()
+    class UTopic* SteeringTopic;
 
     float Throttle;
+    float Steering;
 };

@@ -29,6 +29,17 @@ void AWheeledVehicleController::Possess(APawn *aPawn)
     UROSIntegrationGameInstance* rosinst = Cast<UROSIntegrationGameInstance>(Vehicle->GetGameInstance());
     if (rosinst)
     {
+        if (ThrottleTopic)
+        {
+            ThrottleTopic->Unsubscribe();
+            ThrottleTopic = nullptr;
+        }
+        if (SteeringTopic)
+        {
+            SteeringTopic->Unsubscribe();
+            SteeringTopic = nullptr;
+        }
+
         ThrottleTopic = NewObject<UTopic>(UTopic::StaticClass());
         ThrottleTopic->Init(rosinst->_Ric, FString::Printf(TEXT("/unreal/%s/throttle"), *VehicleName), TEXT("std_msgs/Float32"));
 
@@ -46,6 +57,26 @@ void AWheeledVehicleController::Possess(APawn *aPawn)
             ThrottleTopic = nullptr;
             UE_LOG(LogROSWheeledVehicleController, Error, TEXT("Unable to connect to rosbridge %s:%u."), *rosinst->ROSBridgeServerHost, rosinst->ROSBridgeServerPort);
         }
+        else
+        {
+            SteeringTopic = NewObject<UTopic>(UTopic::StaticClass());
+            SteeringTopic->Init(rosinst->_Ric, FString::Printf(TEXT("/unreal/%s/steering"), *VehicleName), TEXT("std_msgs/Float32"));
+
+            std::function<void(TSharedPtr<FROSBaseMsg>)> SteeringCallback = [this](TSharedPtr<FROSBaseMsg> msg) -> void
+            {
+                auto Concrete = StaticCastSharedPtr<ROSMessages::std_msgs::Float32>(msg);
+                if (Concrete.IsValid())
+                {
+                    this->Steering = Concrete->_Data;
+                }
+            };
+
+            if (!SteeringTopic->Subscribe(SteeringCallback))
+            {
+                SteeringTopic = nullptr;
+                UE_LOG(LogROSWheeledVehicleController, Error, TEXT("Unable to connect to rosbridge %s:%u."), *rosinst->ROSBridgeServerHost, rosinst->ROSBridgeServerPort);
+            }
+        }
     }
     else
     {
@@ -60,5 +91,9 @@ void AWheeledVehicleController::Tick(const float DeltaTime)
   if (VehicleMovement && ThrottleTopic)
   {
       VehicleMovement->SetThrottleInput(Throttle);
+  }
+  if (VehicleMovement && SteeringTopic)
+  {
+      VehicleMovement->SetSteeringInput(Steering);
   }
 }
