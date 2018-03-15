@@ -58,7 +58,7 @@ void AWheeledVehicleController::Possess(APawn *aPawn)
     UROSIntegrationGameInstance* rosinst = Cast<UROSIntegrationGameInstance>(Vehicle->GetGameInstance());
     if (rosinst)
     {
-        bool success = true;
+        bool success = rosinst->bIsConnected;
         success = success && SubscribeTopicFloat32(rosinst, &ThrottleTopic, VehicleName, TEXT("throttle"), &Throttle);
         success = success && SubscribeTopicFloat32(rosinst, &SteeringTopic, VehicleName, TEXT("steering"), &Steering);
         success = success && SubscribeTopicFloat32(rosinst, &BrakeTopic, VehicleName, TEXT("brake"), &Brake);
