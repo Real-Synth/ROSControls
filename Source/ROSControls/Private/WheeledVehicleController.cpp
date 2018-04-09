@@ -10,7 +10,7 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogROSWheeledVehicleController, Log, All);
 
-bool SubscribeTopicFloat32(UROSIntegrationGameInstance* rosinst, UTopic** NewTopic, const FString& VehicleName, const FString& TopicName, float* Float32Variable)
+void SubscribeTopicFloat32(UROSIntegrationGameInstance* ROSInstance, UTopic** NewTopic, const FString& VehicleName, const FString& TopicName, float* Float32Variable)
 {
     if (*NewTopic)
     {
@@ -19,7 +19,7 @@ bool SubscribeTopicFloat32(UROSIntegrationGameInstance* rosinst, UTopic** NewTop
     }
 
     UTopic* Topic = NewObject<UTopic>(UTopic::StaticClass());
-    Topic->Init(rosinst->_Ric, FString::Printf(TEXT("/unreal/%s/%s"), *VehicleName, *TopicName), TEXT("std_msgs/Float32"));
+    Topic->Init(ROSInstance->ROSIntegrationCore, FString::Printf(TEXT("/unreal/%s/%s"), *VehicleName, *TopicName), TEXT("std_msgs/Float32"));
 
     std::function<void(TSharedPtr<FROSBaseMsg>)> Callback = [Float32Variable](TSharedPtr<FROSBaseMsg> msg) -> void
     {
@@ -30,13 +30,8 @@ bool SubscribeTopicFloat32(UROSIntegrationGameInstance* rosinst, UTopic** NewTop
         }
     };
 
-    if (!Topic->Subscribe(Callback))
-    {
-        *NewTopic = nullptr;
-        return false;
-    }
+    Topic->Subscribe(Callback);
     *NewTopic = Topic;
-    return true;
 }
 
 void AWheeledVehicleController::Possess(APawn *aPawn)
@@ -55,22 +50,12 @@ void AWheeledVehicleController::Possess(APawn *aPawn)
 
     const FString& VehicleName = Vehicle->GetName();
 
-    UROSIntegrationGameInstance* rosinst = Cast<UROSIntegrationGameInstance>(Vehicle->GetGameInstance());
-    if (rosinst)
+    UROSIntegrationGameInstance* ROSInstance = Cast<UROSIntegrationGameInstance>(Vehicle->GetGameInstance());
+    if (ROSInstance && ROSInstance->bConnectToROS)
     {
-        bool success = rosinst->bIsConnected;
-        success = success && SubscribeTopicFloat32(rosinst, &ThrottleTopic, VehicleName, TEXT("throttle"), &Throttle);
-        success = success && SubscribeTopicFloat32(rosinst, &SteeringTopic, VehicleName, TEXT("steering"), &Steering);
-        success = success && SubscribeTopicFloat32(rosinst, &BrakeTopic, VehicleName, TEXT("brake"), &Brake);
-
-        if (!success)
-        {
-            UE_LOG(LogROSWheeledVehicleController, Error, TEXT("Unable to connect to rosbridge %s:%u."), *rosinst->ROSBridgeServerHost, rosinst->ROSBridgeServerPort);
-        }
-    }
-    else
-    {
-        UE_LOG(LogROSWheeledVehicleController, Warning, TEXT("ROSIntegrationGameInstance does not exist."));
+        SubscribeTopicFloat32(ROSInstance, &ThrottleTopic, VehicleName, TEXT("throttle"), &Throttle);
+        SubscribeTopicFloat32(ROSInstance, &SteeringTopic, VehicleName, TEXT("steering"), &Steering);
+        SubscribeTopicFloat32(ROSInstance, &BrakeTopic, VehicleName, TEXT("brake"), &Brake);
     }
 }
 
