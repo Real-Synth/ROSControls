@@ -10,7 +10,7 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogROSWheeledVehicleController, Log, All);
 
-void SubscribeTopicFloat32(UROSIntegrationGameInstance* ROSInstance, UTopic** NewTopic, const FString& VehicleName, const FString& TopicName, float* Float32Variable)
+void SubscribeTopicFloat32(UROSIntegrationGameInstance* ROSInstance, UTopic** NewTopic, const FString& VehicleName, const FString& TopicName, float* Float32Variable, int32 QueueSize)
 {
     if (*NewTopic)
     {
@@ -19,7 +19,7 @@ void SubscribeTopicFloat32(UROSIntegrationGameInstance* ROSInstance, UTopic** Ne
     }
 
     UTopic* Topic = NewObject<UTopic>(UTopic::StaticClass());
-    Topic->Init(ROSInstance->ROSIntegrationCore, FString::Printf(TEXT("/unreal/%s/%s"), *VehicleName, *TopicName), TEXT("std_msgs/Float32"));
+    Topic->Init(ROSInstance->ROSIntegrationCore, FString::Printf(TEXT("/unreal/%s/%s"), *VehicleName, *TopicName), TEXT("std_msgs/Float32"), QueueSize);
 
     std::function<void(TSharedPtr<FROSBaseMsg>)> Callback = [Float32Variable](TSharedPtr<FROSBaseMsg> msg) -> void
     {
@@ -53,9 +53,10 @@ void AWheeledVehicleController::Possess(APawn *aPawn)
     UROSIntegrationGameInstance* ROSInstance = Cast<UROSIntegrationGameInstance>(Vehicle->GetGameInstance());
     if (ROSInstance && ROSInstance->bConnectToROS)
     {
-        SubscribeTopicFloat32(ROSInstance, &ThrottleTopic, VehicleName, TEXT("throttle"), &Throttle);
-        SubscribeTopicFloat32(ROSInstance, &SteeringTopic, VehicleName, TEXT("steering"), &Steering);
-        SubscribeTopicFloat32(ROSInstance, &BrakeTopic, VehicleName, TEXT("brake"), &Brake);
+        const int32 QueueSize = 1;
+        SubscribeTopicFloat32(ROSInstance, &ThrottleTopic, VehicleName, TEXT("throttle"), &Throttle, QueueSize);
+        SubscribeTopicFloat32(ROSInstance, &SteeringTopic, VehicleName, TEXT("steering"), &Steering, QueueSize);
+        SubscribeTopicFloat32(ROSInstance, &HandbrakeTopic, VehicleName, TEXT("handbrake"), &Handbrake, QueueSize);
     }
 }
 
@@ -71,8 +72,8 @@ void AWheeledVehicleController::Tick(const float DeltaTime)
   {
       VehicleMovement->SetSteeringInput(Steering);
   }
-  if (VehicleMovement && BrakeTopic)
+  if (VehicleMovement && HandbrakeTopic)
   {
-      VehicleMovement->SetBrakeInput(Brake);
+      VehicleMovement->SetHandbrakeInput(Handbrake > 0.5f);
   }
 }
