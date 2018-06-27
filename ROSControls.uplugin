@@ -28,6 +28,10 @@
         {
             "Name": "ROSIntegration",
             "Enabled": true
+        },
+        {
+            "Name": "UnrealEnginePython",
+            "Enabled": true
         }
     ]
 }

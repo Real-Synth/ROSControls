@@ -1,16 +1,14 @@
 // Copyright 2018 RealSynth GmbH
 
-#include "WheeledVehicleController.h"
-#include "WheeledVehicle.h"
-#include "WheeledVehicleMovementComponent.h"
+#include "CinematicRailVehicleComponent.h"
 
 #include "ROSIntegration/Classes/RI/Topic.h"
 #include "ROSIntegration/Classes/ROSIntegrationGameInstance.h"
 #include "ROSIntegration/Public/std_msgs/Float32.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogROSWheeledVehicleController, Log, All);
+DEFINE_LOG_CATEGORY_STATIC(LogROSCinematicRailVehicleComponent, Log, All);
 
-static void SubscribeTopicFloat32(UROSIntegrationGameInstance* ROSInstance, UTopic** NewTopic, const FString& VehicleName, const FString& TopicName, float* Float32Variable, int32 QueueSize)
+static void CinematicSubscribeTopicFloat32(UROSIntegrationGameInstance* ROSInstance, UTopic** NewTopic, const FString& VehicleName, const FString& TopicName, float* Float32Variable, int32 QueueSize)
 {
     if (*NewTopic)
     {
@@ -34,7 +32,7 @@ static void SubscribeTopicFloat32(UROSIntegrationGameInstance* ROSInstance, UTop
     *NewTopic = Topic;
 }
 
-void AWheeledVehicleController::Possess(APawn *aPawn)
+/*void AWheeledVehicleController::Possess(APawn *aPawn)
 {
     Super::Possess(aPawn);
 
@@ -42,7 +40,7 @@ void AWheeledVehicleController::Possess(APawn *aPawn)
   
     if (!Vehicle)
     {
-        UE_LOG(LogROSWheeledVehicleController, Error, TEXT("Vehicle Controller is not used with AWheeledVehicle."));
+        UE_LOG(LogROSCinematicRailVehicleController, Error, TEXT("Vehicle Controller is not used with AWheeledVehicle."));
         return;
     }
 
@@ -54,26 +52,16 @@ void AWheeledVehicleController::Possess(APawn *aPawn)
     if (ROSInstance && ROSInstance->bConnectToROS)
     {
         const int32 QueueSize = 1;
-        SubscribeTopicFloat32(ROSInstance, &ThrottleTopic, VehicleName, TEXT("throttle"), &Throttle, QueueSize);
-        SubscribeTopicFloat32(ROSInstance, &SteeringTopic, VehicleName, TEXT("steering"), &Steering, QueueSize);
-        SubscribeTopicFloat32(ROSInstance, &HandbrakeTopic, VehicleName, TEXT("handbrake"), &Handbrake, QueueSize);
+        SubscribeTopicFloat32(ROSInstance, &CurrentPositionOnRailTopic, VehicleName, TEXT("throttle"), &CurrentPositionOnRail, QueueSize);
     }
-}
+}*/
 
-void AWheeledVehicleController::Tick(const float DeltaTime)
+void UCinematicRailVehicleComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
-  Super::Tick(DeltaTime);
+  Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-  if (VehicleMovement && ThrottleTopic)
+  if (CameraRig_Rail && CurrentPositionOnRailTopic)
   {
-      VehicleMovement->SetThrottleInput(Throttle);
-  }
-  if (VehicleMovement && SteeringTopic)
-  {
-      VehicleMovement->SetSteeringInput(Steering);
-  }
-  if (VehicleMovement && HandbrakeTopic)
-  {
-      VehicleMovement->SetHandbrakeInput(Handbrake > 0.5f);
+      CameraRig_Rail->CurrentPositionOnRail = CurrentPositionOnRail;
   }
 }

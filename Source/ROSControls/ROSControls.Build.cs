@@ -27,8 +27,9 @@ public class ROSControls : ModuleRules
 			{
 				"Core",
                 "PhysXVehicles",
-                "ROSIntegration"
-			}
+                "ROSIntegration",
+                "UnrealEnginePython"
+            }
 			);
 			
 		
@@ -38,8 +39,9 @@ public class ROSControls : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore"
-			}
+				"SlateCore",
+                "CinematicCamera"
+            }
 			);
 		
 		
