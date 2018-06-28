@@ -40,7 +40,7 @@ void UROSControlsGameInstance::Init()
             }
         };
 
-        PythonCommandService->Advertise(ServiceHandlerCallback);
+        PythonCommandService->Advertise(ServiceHandlerCallback, true);
     }
 }
 
