@@ -1,6 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#if PLATFORM_WINDOWS
+#include "WindowsHWrapper.h"
+#endif
+
 #include "Engine/GameInstance.h"
 
 #include "ROSIntegrationGameInstance.h"

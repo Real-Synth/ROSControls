@@ -1,5 +1,7 @@
 #include "ROSControlsGameInstance.h"
 #include "ROSIntegration/Classes/RI/Service.h"
+#include "ROSControlsCommandRequest.h"
+#include "ROSControlsCommandResponse.h"
 
 void UROSControlsGameInstance::Init()
 {
@@ -21,20 +23,21 @@ void UROSControlsGameInstance::Init()
     if (bConnectToROS && !PythonCommandService)
     {
         PythonCommandService = NewObject<UService>(UService::StaticClass());
-        PythonCommandService->Init(ROSIntegrationCore, FString(TEXT("/unreal/python_command")), FString(TEXT("ros_ctrl/command")));
+        PythonCommandService->Init(ROSIntegrationCore, FString(TEXT("/unreal/python_command")), FString(TEXT("realsynth/python_command")));
 
-        auto ServiceHandlerCallback = [](TSharedPtr<FROSBaseServiceRequest> Request, TSharedPtr<FROSBaseServiceResponse> Response) -> void
+        FUnrealEnginePythonModule* PyModule = PythonModule;
+        auto ServiceHandlerCallback = [this, PyModule](TSharedPtr<FROSBaseServiceRequest> Request, TSharedPtr<FROSBaseServiceResponse> Response) -> void
         {
-            /*auto ConcreteRequest = StaticCastSharedPtr<ROSMessages::std_msgs::Float32>(Request);
+            auto ConcreteRequest = StaticCastSharedPtr<FROSControlsCommandRequest>(Request);
             if (ConcreteRequest.IsValid())
             {
-                *Float32Variable = Concrete->_Data;
-
+                FString Command = ConcreteRequest->_Data;
                 FString PyCode = FString(TEXT("return_cmd(")) + Command + FString(TEXT(")"));
-                //PythonModule->RunString(TCHAR_TO_UTF8(*PyCode));
+                PyModule->RunString(TCHAR_TO_UTF8(*PyCode));
 
-                // TODO: put CommandResult back into service response
-            }*/
+                auto ConcreteResponse = StaticCastSharedPtr<FROSControlsCommandResponse>(Response);
+                ConcreteResponse->_Data = this->CommandResult;
+            }
         };
 
         PythonCommandService->Advertise(ServiceHandlerCallback);

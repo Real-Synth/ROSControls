@@ -7,8 +7,8 @@ public class ROSControls : ModuleRules
 	public ROSControls(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
-		PublicIncludePaths.AddRange(
+
+        PublicIncludePaths.AddRange(
 			new string[] {
 				"ROSControls/Public"
 			}
@@ -18,7 +18,9 @@ public class ROSControls : ModuleRules
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				"ROSControls/Private",
-			}
+                "../../ROSIntegration/Source/ROSIntegration/Private",
+                "../../ROSIntegration/Source/ROSIntegration/Private/rosbridge2cpp"
+            }
 			);
 			
 		
