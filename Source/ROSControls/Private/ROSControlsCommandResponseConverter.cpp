@@ -28,6 +28,7 @@ bool UROSControlsCommandResponseConverter::ConvertOutgoingResponse(TSharedPtr<FR
 
     res.result_ = ServiceResponse->_Result;
     BSON_APPEND_UTF8(res.values_bson_, "data", TCHAR_TO_UTF8(*ServiceResponse->_Data));
+    BSON_APPEND_UTF8(res.values_bson_, "error", TCHAR_TO_UTF8(*ServiceResponse->_Error));
 	return true;
 }
 

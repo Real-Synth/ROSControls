@@ -9,4 +9,5 @@ public:
     ~FROSControlsCommandResponse() = default;
 
     FString _Data;
+    FString _Error;
 };

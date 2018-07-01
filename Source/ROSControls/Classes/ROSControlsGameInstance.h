@@ -28,8 +28,5 @@ private:
     UPROPERTY()
     class UService* PythonCommandService;
 
-    UPROPERTY()
-    FString CommandResult;
-
     FUnrealEnginePythonModule* PythonModule;
 };
