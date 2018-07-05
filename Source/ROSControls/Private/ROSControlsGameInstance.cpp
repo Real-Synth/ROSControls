@@ -1,5 +1,6 @@
 #include "ROSControlsGameInstance.h"
 #include "ROSIntegration/Classes/RI/Service.h"
+#include "ROSIntegration/Classes/RI/Topic.h"
 #include "ROSControlsCommandRequest.h"
 #include "ROSControlsCommandResponse.h"
 
@@ -18,27 +19,24 @@ void UROSControlsGameInstance::Init()
 
     PythonModule->RunString(TCHAR_TO_UTF8(*PyCode));
 
-    if (bConnectToROS && !PythonCommandService)
+    if (bConnectToROS && !PythonRequestService)
     {
-        PythonCommandService = NewObject<UService>(UService::StaticClass());
-        PythonCommandService->Init(ROSIntegrationCore, FString(TEXT("/unreal/python_command")), FString(TEXT("realsynth/python_command")));
+        PythonRequestService = NewObject<UService>(UService::StaticClass());
+        PythonRequestService->Init(ROSIntegrationCore, FString(TEXT("/naichar/python_request")), FString(TEXT("realsynth/python_request")));
 
         auto ServiceHandlerCallback = [this](TSharedPtr<FROSBaseServiceRequest> Request, TSharedPtr<FROSBaseServiceResponse> Response) -> void
         {
             auto ConcreteRequest = StaticCastSharedPtr<FROSControlsCommandRequest>(Request);
             if (ConcreteRequest.IsValid())
             {
-                FString Command = ConcreteRequest->_Data;
+                FString RequestCommand = TEXT("_=") + ConcreteRequest->_Data;
                 FString Result;
-                bool success = PythonModule->RunString(TCHAR_TO_UTF8(*Command), Result);
+                bool success = PythonModule->RunString(TCHAR_TO_UTF8(*RequestCommand), Result);
 
                 auto ConcreteResponse = StaticCastSharedPtr<FROSControlsCommandResponse>(Response);
                 if (success)
                 {
-                    if (Command.StartsWith("_"))
-                    {
-                        ConcreteResponse->_Data = Result;
-                    }
+                    ConcreteResponse->_Data = Result;
                 }
                 else
                 {
@@ -48,7 +46,27 @@ void UROSControlsGameInstance::Init()
             }
         };
 
-        PythonCommandService->Advertise(ServiceHandlerCallback, true);
+        PythonRequestService->Advertise(ServiceHandlerCallback, true);
+
+        PythonCommandTopic = NewObject<UTopic>(UTopic::StaticClass());
+        PythonCommandTopic->Init(ROSIntegrationCore, FString(TEXT("/naichar/python_command")), FString(TEXT("std_msgs/String")), 10);
+
+        PythonCommandTopic->Advertise();
+        std::function<void(TSharedPtr<FROSBaseMsg>)> CommandCallback = [this](TSharedPtr<FROSBaseMsg> msg) -> void
+        {
+            auto ConcreteStringMessage = StaticCastSharedPtr<ROSMessages::std_msgs::String>(msg);
+            if (ConcreteStringMessage.IsValid())
+            {
+                const FString Command = ConcreteStringMessage->_Data;
+                FUnrealEnginePythonModule* PM = PythonModule;
+                AsyncTask(ENamedThreads::GameThread, [PM, Command]()
+                {
+                    PM->RunString(TCHAR_TO_UTF8(*Command));
+                });
+            }
+        };
+
+        PythonCommandTopic->Subscribe(CommandCallback);
     }
 }
 

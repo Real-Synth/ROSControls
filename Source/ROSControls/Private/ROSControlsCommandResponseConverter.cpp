@@ -7,7 +7,7 @@
 UROSControlsCommandResponseConverter::UROSControlsCommandResponseConverter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	_ServiceType = "realsynth/python_command";
+	_ServiceType = "realsynth/python_request";
 }
 
 bool UROSControlsCommandResponseConverter::ConvertIncomingResponse(const ROSBridgeServiceResponseMsg &res, TSharedRef<TSharedPtr<FROSBaseServiceResponse>> Response) {

@@ -6,7 +6,7 @@
 UROSControlsCommandRequestConverter::UROSControlsCommandRequestConverter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	_ServiceType = "realsynth/python_command";
+	_ServiceType = "realsynth/python_request";
 }
 
 bool UROSControlsCommandRequestConverter::ConvertOutgoingRequest(TSharedPtr<FROSBaseServiceRequest> Request, bson_t** BSONRequest) {

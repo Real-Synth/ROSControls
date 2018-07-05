@@ -26,7 +26,9 @@ public:
 private:
 
     UPROPERTY()
-    class UService* PythonCommandService;
+    class UService* PythonRequestService;
+    UPROPERTY()
+    class UTopic* PythonCommandTopic;
 
     FUnrealEnginePythonModule* PythonModule;
 };
