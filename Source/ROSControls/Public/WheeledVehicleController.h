@@ -31,14 +31,10 @@ private:
     UPROPERTY(Category = Vehicle, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     class UWheeledVehicleMovementComponent* VehicleMovement;
 
-    UPROPERTY()
-    class UTopic* ThrottleTopic;
-    UPROPERTY()
-    class UTopic* SteeringTopic;
-    UPROPERTY()
-    class UTopic* HandbrakeTopic;
-
-    float Throttle;
-    float Steering;
-    float Handbrake;
+    UPROPERTY(EditAnywhere)
+    float RawThrottleInput;
+    UPROPERTY(EditAnywhere)
+    float RawSteeringInput;
+    UPROPERTY(EditAnywhere)
+    float RawHandbrakeInput;
 };
