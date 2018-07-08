@@ -23,6 +23,10 @@ public:
 	virtual void Shutdown() override;
 	void BeginDestroy() override;
 
+protected:
+    virtual void OnStart() override;
+    virtual void LoadComplete(const float LoadTime, const FString& MapName) override;
+
 private:
 
     UPROPERTY()

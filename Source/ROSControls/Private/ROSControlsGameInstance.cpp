@@ -7,18 +7,10 @@
 void UROSControlsGameInstance::Init()
 {
     Super::Init();
+}
 
-    PythonModule = FModuleManager::GetModulePtr<FUnrealEnginePythonModule>("UnrealEnginePython");
-
-    // set up the return_cmd method to get the results of external calls as json string
-    FString PyCode =
-            FString(TEXT("import unreal_engine\n"))
-            + FString(TEXT("import json\n"))
-            + FString(TEXT("naichar = unreal_engine.all_worlds()[-1]\n"))
-            ;
-
-    PythonModule->RunString(TCHAR_TO_UTF8(*PyCode));
-
+void UROSControlsGameInstance::OnStart()
+{
     if (bConnectToROS && !PythonRequestService)
     {
         PythonRequestService = NewObject<UService>(UService::StaticClass());
@@ -30,13 +22,18 @@ void UROSControlsGameInstance::Init()
             if (ConcreteRequest.IsValid())
             {
                 FString RequestCommand = TEXT("_=") + ConcreteRequest->_Data;
+                bool isOnlyCommand = ConcreteRequest->_Data.StartsWith(":");
+                if (isOnlyCommand)
+                {
+                    RequestCommand = ConcreteRequest->_Data.RightChop(1);
+                }
                 FString Result;
                 bool success = PythonModule->RunString(TCHAR_TO_UTF8(*RequestCommand), Result);
 
                 auto ConcreteResponse = StaticCastSharedPtr<FROSControlsCommandResponse>(Response);
                 if (success)
                 {
-                    ConcreteResponse->_Data = Result;
+                    ConcreteResponse->_Data = isOnlyCommand ? TEXT("OK") : Result;
                 }
                 else
                 {
@@ -68,6 +65,21 @@ void UROSControlsGameInstance::Init()
 
         PythonCommandTopic->Subscribe(CommandCallback);
     }
+}
+
+void UROSControlsGameInstance::LoadComplete(const float LoadTime, const FString& MapName)
+{
+    PythonModule = FModuleManager::GetModulePtr<FUnrealEnginePythonModule>("UnrealEnginePython");
+
+    // set up the return_cmd method to get the results of external calls as json string
+    FString PyCode =
+        FString(TEXT("import unreal_engine\n"))
+        + FString(TEXT("import json\n"))
+        + FString(TEXT("naichar = unreal_engine.all_worlds()[-1]\n"))
+        + FString(TEXT("from unreal_engine.classes import GameplayStatics\n"))
+        ;
+
+    PythonModule->RunString(TCHAR_TO_UTF8(*PyCode));
 }
 
 void UROSControlsGameInstance::Shutdown()
