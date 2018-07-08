@@ -11,6 +11,11 @@ void UROSControlsGameInstance::Init()
 
 void UROSControlsGameInstance::OnStart()
 {
+    if (!PythonModule) // in PIE we need to call Load manually
+    {
+        LoadComplete(0.0f, TEXT(""));
+    }
+
     if (bConnectToROS && !PythonRequestService)
     {
         PythonRequestService = NewObject<UService>(UService::StaticClass());
@@ -69,6 +74,8 @@ void UROSControlsGameInstance::OnStart()
 
 void UROSControlsGameInstance::LoadComplete(const float LoadTime, const FString& MapName)
 {
+    Super::LoadComplete(LoadTime, MapName);
+
     PythonModule = FModuleManager::GetModulePtr<FUnrealEnginePythonModule>("UnrealEnginePython");
 
     // set up the return_cmd method to get the results of external calls as json string
