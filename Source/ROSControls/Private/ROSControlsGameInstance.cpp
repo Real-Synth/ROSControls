@@ -82,6 +82,7 @@ void UROSControlsGameInstance::LoadComplete(const float LoadTime, const FString&
     FString PyCode =
         FString(TEXT("import unreal_engine\n"))
         + FString(TEXT("import json\n"))
+        + FString(TEXT("from unreal_engine import FVector, FRotator, FColor, FHitResult\n"))
         + FString(TEXT("naichar = unreal_engine.all_worlds()[-1]\n"))
         + FString(TEXT("from unreal_engine.classes import GameplayStatics\n"))
         ;
