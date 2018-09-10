@@ -60,10 +60,14 @@ void UROSControlsGameInstance::OnStart()
             if (ConcreteStringMessage.IsValid())
             {
                 const FString Command = ConcreteStringMessage->_Data;
-                FUnrealEnginePythonModule* PM = PythonModule;
+				TWeakPtr<FUnrealEnginePythonModule, ESPMode::ThreadSafe> PM(PythonModule);
                 AsyncTask(ENamedThreads::GameThread, [PM, Command]()
                 {
-                    PM->RunString(TCHAR_TO_UTF8(*Command));
+					auto localPM = PM.Pin();
+					if(localPM.IsValid())
+					{
+						localPM->RunString(TCHAR_TO_UTF8(*Command));
+					}
                 });
             }
         };
@@ -76,7 +80,7 @@ void UROSControlsGameInstance::LoadComplete(const float LoadTime, const FString&
 {
     Super::LoadComplete(LoadTime, MapName);
 
-    PythonModule = FModuleManager::GetModulePtr<FUnrealEnginePythonModule>("UnrealEnginePython");
+    PythonModule = MakeShareable(FModuleManager::GetModulePtr<FUnrealEnginePythonModule>("UnrealEnginePython"));
 
     // set up the return_cmd method to get the results of external calls as json string
     FString PyCode =
@@ -92,6 +96,8 @@ void UROSControlsGameInstance::LoadComplete(const float LoadTime, const FString&
 
 void UROSControlsGameInstance::Shutdown()
 {
+	PythonModule.Reset();
+
     Super::Shutdown();
 }
 
