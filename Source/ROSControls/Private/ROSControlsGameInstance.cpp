@@ -1,6 +1,7 @@
 #include "ROSControlsGameInstance.h"
 #include "ROSIntegration/Classes/RI/Service.h"
 #include "ROSIntegration/Classes/RI/Topic.h"
+#include "std_msgs/String.h"
 #include "ROSControlsCommandRequest.h"
 #include "ROSControlsCommandResponse.h"
 
