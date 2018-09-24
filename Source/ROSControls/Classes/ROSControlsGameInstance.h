@@ -34,5 +34,5 @@ private:
     UPROPERTY()
     class UTopic* PythonCommandTopic;
 
-	TSharedPtr<FUnrealEnginePythonModule, ESPMode::ThreadSafe> PythonModule;
+	class FUnrealEnginePythonModule* PythonModule;
 };
