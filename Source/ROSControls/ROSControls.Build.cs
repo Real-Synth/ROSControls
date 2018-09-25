@@ -10,14 +10,12 @@ public class ROSControls : ModuleRules
 
         PublicIncludePaths.AddRange(
 			new string[] {
-				"ROSControls/Public"
 			}
 			);
 				
 		
 		PrivateIncludePaths.AddRange(
 			new string[] {
-				"ROSControls/Private",
                 "../../ROSIntegration/Source/ROSIntegration/Private",
                 "../../ROSIntegration/Source/ROSIntegration/Private/rosbridge2cpp"
             }
